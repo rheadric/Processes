@@ -10,7 +10,7 @@ to the project.  In the sample output below I have suppressed warning messages o
 The example below illustrates using  CubicProcessList(),  getprocess(), findneighbors(), and processController!()
 to move a randomly chosen atom, making it hop to a neighboring site.   Atom 16 is moved with a move vector of [1, 0, 0].
 
-'''julia
+```julia
 
 julia> push!(LOAD_PATH, "/Users/randallheadrick/Documents/myjulia/Crystal/src")
 4-element Array{String,1}:
@@ -127,7 +127,7 @@ julia> x.world
  0  0  0  0  0
  0  0  0  0  0
  0  0  0  0  0
- '''
+ ```
  """
 module Processes
 export getprocess, CubicProcessList, getindex, countneighbors!, IrreversibleStickingRates!, CubicProcessRates
