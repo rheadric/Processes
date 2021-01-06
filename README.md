@@ -85,7 +85,6 @@ findneighbors, processController!, updateAtomRegistry!
 
 ## Examples
 
-"""
 Structures and functions to support a Kinetic Monte Carlo simulation.
 
 ## Demo version Examples
@@ -215,4 +214,3 @@ julia> x.world
  0  0  0  0  0
  0  0  0  0  0
  '''
- """
