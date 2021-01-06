@@ -1,17 +1,18 @@
 ##
 print("Hello world!")
 ##
-push!(LOAD_PATH, "/Users/randallheadrick/Documents/myjulia/KMC/Crystal/src")
+push!(LOAD_PATH, "/Users/randallheadrick/Documents/myjulia/Crystal/src")
 using Pkg
 Pkg.activate("Crystal")
 using Crystal
 cryst = Crystal
 ##
-push!(LOAD_PATH, "/Users/randallheadrick/Documents/myjulia/KMC/Processes/src")
-push!(LOAD_PATH, "/Users/randallheadrick/Documents/myjulia/KMC/Crystal/src")
-using Crystal
+push!(LOAD_PATH, "/Users/randallheadrick/Documents/myjulia/Crystal/src")
+using Pkg
+Pkg.activate("/Users/randallheadrick/Documents/myjulia/Processes")
+import Crystal
 cryst = Crystal
-#using Processes
+using Processes
 ##
 x = cryst.Cubic(5,5)
 for i=1:20 cryst.Deposit(x) end

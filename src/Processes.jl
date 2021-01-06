@@ -1,5 +1,133 @@
 """
-To do: add some description and examples.
+Structures and functions to support a Kinetic Monte Carlo simulation.
+
+## Demo version Examples
+
+Note: dependency on module Crystal is not fully resolved since I have been unable to use Pkg to add it 
+to the project.  In the sample output below I have suppressed warning messages of the type
+"Warning: Package Processes does not have Crystal in its dependencies".
+
+The example below illustrates using  CubicProcessList(),  getprocess(), findneighbors(), and processController!()
+to move a randomly chosen atom, making it hop to a neighboring site.   Atom 16 is moved with a move vector of [1, 0, 0].
+
+'''julia
+
+julia> push!(LOAD_PATH, "/Users/randallheadrick/Documents/myjulia/Crystal/src")
+4-element Array{String,1}:
+ "@"
+ "@v#.#"
+ "@stdlib"
+ "/Users/randallheadrick/Documents/myjulia/Crystal/src"
+
+julia> import Crystal
+[ Info: Precompiling Crystal [top-level]
+
+julia> cryst = Crystal
+Crystal
+
+julia> using Processes
+[ Info: Precompiling Processes [2d12a7ed-b8d4-474f-8acb-b0cb9a709a13]
+ ... warning messages ...
+
+julia> x = cryst.Cubic(5,5)
+Crystal.Cubic(5, 5, Crystal.Atom[Crystal.Atom(1, 1, 1, 1, Crystal.Process[#undef])], [1 1 … 1 1; 1 1 … 1 1; … ; 1 1 … 1 1; 1 1 … 1 1]
+
+[0 0 … 0 0; 0 0 … 0 0; … ; 0 0 … 0 0; 0 0 … 0 0]
+
+[0 0 … 0 0; 0 0 … 0 0; … ; 0 0 … 0 0; 0 0 … 0 0]
+
+[0 0 … 0 0; 0 0 … 0 0; … ; 0 0 … 0 0; 0 0 … 0 0]
+
+[0 0 … 0 0; 0 0 … 0 0; … ; 0 0 … 0 0; 0 0 … 0 0], 2)
+
+julia> for i=1:20 cryst.Deposit(x) end
+
+julia> x.world
+5×5×5 Array{Int64,3}:
+[:, :, 1] =
+ 1  1  1  1  1
+ 1  1  1  1  1
+ 1  1  1  1  1
+ 1  1  1  1  1
+ 1  1  1  1  1
+
+[:, :, 2] =
+  0   8  0  20   3
+ 21  17  0  16  18
+ 19   0  0   0   2
+ 11   0  0   6  15
+  0   5  0   4   0
+
+[:, :, 3] =
+ 0  10  0  0   9
+ 0   0  0  0   0
+ 0   0  0  0  12
+ 0   0  0  7   0
+ 0   0  0  0   0
+
+[:, :, 4] =
+ 0  14  0   0  0
+ 0   0  0   0  0
+ 0   0  0   0  0
+ 0   0  0  13  0
+ 0   0  0   0  0
+
+[:, :, 5] =
+ 0  0  0  0  0
+ 0  0  0  0  0
+ 0  0  0  0  0
+ 0  0  0  0  0
+ 0  0  0  0  0
+
+ julia> y = CubicProcessList(x)
+CubicProcessList(Crystal.Process[Crystal.Process(4, [0, 1, 0], 2, 2, 1.0),  ...
+
+julia> p = getprocess(y,z)
+Crystal.Process(16, [1, 0, 0], 2, 2, 1.0)
+ 
+julia> n = findneighbors(x,p)
+ ...
+
+julia> processController!(x,p,y,z)
+...
+
+julia> x.world
+5×5×5 Array{Int64,3}:
+[:, :, 1] =
+ 1  1  1  1  1
+ 1  1  1  1  1
+ 1  1  1  1  1
+ 1  1  1  1  1
+ 1  1  1  1  1
+
+[:, :, 2] =
+  0   8  0  20   3
+ 21  17  0   0  18
+ 19   0  0  16   2
+ 11   0  0   6  15
+  0   5  0   4   0
+
+[:, :, 3] =
+ 0  10  0  0   9
+ 0   0  0  0   0
+ 0   0  0  0  12
+ 0   0  0  7   0
+ 0   0  0  0   0
+
+[:, :, 4] =
+ 0  14  0   0  0
+ 0   0  0   0  0
+ 0   0  0   0  0
+ 0   0  0  13  0
+ 0   0  0   0  0
+
+[:, :, 5] =
+ 0  0  0  0  0
+ 0  0  0  0  0
+ 0  0  0  0  0
+ 0  0  0  0  0
+ 0  0  0  0  0
+ '''
  """
 module Processes
 export getprocess, CubicProcessList, getindex, countneighbors!, IrreversibleStickingRates!, CubicProcessRates
@@ -35,9 +163,23 @@ export findneighbors, processController!, updateAtomRegistry!
 #                   updateAtomRegistry!() The neighbors whose environment has changed need to have their 
 #                   processes updated.  Do this in Crystal.Cubic first.
 # V0.1 RLH 1/3/21   Apply the sticking model.   New version of IrreversibleStickingRates!() to work on the crystal.
-#                   Plan: Old processes that are no longer allowed will be dropped from the process lists.  Any
-#                   new processes that were not previously on the relevant list will need to be added. 
-#                   
+#                   updateCubicProcessListandRates!(): Old processes that are no longer allowed will be dropped 
+#                   from the process lists.  Any new processes that were not previously on the relevant list
+#                   will need to be added. Procees rates in  struct CubicProcessRates are also updated.
+# V0.1 RLH 1/5/21   I consider this to be a first working version, good enough for a demo at least. 
+#                   First commit on github!
+#
+# V0.1 RLH 1/5/21   I expect a long dormant period.  A rough roadmap for when I pick it up again -- 
+#                   V0.2 : Develop structures and functions for FCC111 processes and rates. 
+#                   Re-use code that I've already developed for the Cubic case  whenever possible.
+#                   V0.3:  will probably be about implemention rates for specific processes, 
+#                   i.e. surface diffusion, edge and corner diffusion, Schwoebel barrier, etc. I've already
+#                   implemented IrreversibleStickingRates!() that just looks at the NN count and sets the rates
+#                   to zero if NNs > 0.
+#                   V0.4 and beyond:  There needs to be a main() function that controls everything.  We'll need 
+#                   lots of data archiving and analysis tools.  Maybe we'll use tools that Jeff Ulbrant
+#                   has developed for his KMC code.
+#                   Or maybe none of that will ever happen.  It's been worth it as a project just to learn Julia!
 
 using PyPlot
 using Crystal
@@ -60,6 +202,18 @@ end
 """
 Build the process list from scratch. 
 The hop directions (North, South, East, West, etc.) are specific to a cubic crystal type.
+
+# Fields
+
+* proclNorth     :: Array{Process,1}
+* proclSouth     :: Array{Process,1}
+* proclEast      :: Array{Process,1}
+* proclWest      :: Array{Process,1}
+* proclDownNorth :: Array{Process,1}
+* proclDownSouth :: Array{Process,1}
+* proclDownEast  :: Array{Process,1}
+* proclDownWest  :: Array{Process,1}
+
 """
 mutable struct CubicProcessList <: AbstractProcessList
     proclNorth::Array{Process,1}
@@ -263,6 +417,21 @@ end
 
 """
 Total process rates for each process list.
+
+## Fields
+
+* processtotals  :: Array{Float64,1}
+* ratesNorth     :: Array{Float64,1}
+* ratesSouth     :: Array{Float64,1}
+* ratesEast      :: Array{Float64,1}
+* ratesWest      :: Array{Float64,1}
+* ratesDownNorth :: Array{Float64,1}
+* ratesDownSouth :: Array{Float64,1}
+* ratesDownEast  :: Array{Float64,1}
+* ratesDownWest  :: Array{Float64,1}
+* depositionRate :: Array{Float64,1}
+* indexarray     :: Array{Int64,1}
+
 """
 mutable struct CubicProcessRates <: AbstractProcessRates
     processtotals::Array{Float64,1}

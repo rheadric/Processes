@@ -1,0 +1,8 @@
+name = "Processes"
+uuid = "2d12a7ed-b8d4-474f-8acb-b0cb9a709a13"
+authors = ["Unknown "]
+version = "0.1.0"
+
+[deps]
+PyPlot = "d330b81b-6aea-500a-939a-2ce795aea3ee"
+StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
